@@ -1,19 +1,20 @@
 package com.example.randomcountryapp;
 
+import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 
 import android.content.ActivityNotFoundException;
 import android.content.Context;
 import android.content.Intent;
-import android.hardware.Sensor;
+import android.graphics.drawable.Drawable;
 import android.hardware.SensorManager;
 import android.net.Uri;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.View;
 import android.widget.Button;
+import android.widget.ImageView;
 import android.widget.TextView;
-import android.widget.Toast;
 
 import com.android.volley.Cache;
 import com.android.volley.Network;
@@ -26,42 +27,40 @@ import com.android.volley.toolbox.DiskBasedCache;
 import com.android.volley.toolbox.HurlStack;
 import com.android.volley.toolbox.StringRequest;
 import com.android.volley.toolbox.Volley;
+import com.squareup.picasso.Picasso;
 import com.squareup.seismic.ShakeDetector;
 
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import java.io.InputStream;
+import java.net.URL;
 import java.util.Random;
 
 
 public class MainActivity extends AppCompatActivity implements ShakeDetector.Listener{
 
     TextView randomCountry;
-    TextView capital;
+    TextView randomCapital;
     Button button;
     Button searchButton;
-    String[] COUNTRIES = {"Poland", "Ukraine", "Germany"};
-
-    private SensorManager mSensorManager;
-    private float mAccel;
-    private float mAccelCurrent;
-    private float mAccelLast;
-
-
+    ImageView imageView;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
 
 
         super.onCreate(savedInstanceState);
+        setTheme(R.style.splashCreenTheme);
+
         setContentView(R.layout.activity_main);
 
         randomCountry = findViewById(R.id.randomCountry);
-        capital = findViewById(R.id.capital);
+        randomCapital = findViewById(R.id.capital);
         button = findViewById(R.id.button);
         searchButton = findViewById(R.id.search);
-
+        imageView = findViewById(R.id.imgFlag);
 
         button.setOnClickListener(new View.OnClickListener(){
             @Override
@@ -87,10 +86,11 @@ public class MainActivity extends AppCompatActivity implements ShakeDetector.Lis
 
 
 
+
     }
 
     private void searchInGoogle() {
-        String urlString = "https://www.google.com/search?q=" + capital.getText().toString();
+        String urlString = "https://www.google.com/search?q=" + randomCapital.getText().toString();
         Intent intent = new Intent(Intent.ACTION_VIEW, Uri.parse(urlString));
         intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
         intent.setPackage("com.android.chrome");
@@ -121,40 +121,63 @@ public class MainActivity extends AppCompatActivity implements ShakeDetector.Lis
         RequestQueue queue = Volley.newRequestQueue(this);
 
         Random r = new Random();
-        int random = r.nextInt(3);
+        int random = r.nextInt(250);
 
 
 
 
-        String url ="https://restcountries.com/v3.1/name/" + COUNTRIES[random];
+        String url ="https://restcountries.com/v3.1/all";
 
 // Request a string response from the provided URL.
         StringRequest stringRequest = new StringRequest(Request.Method.GET, url,
                 new Response.Listener<String>() {
                     @Override
                     public void onResponse(String response) {
-                       Log.d("Response", response.substring(0,500));
+                       //Log.d("Response", response.substring(0,500));
 
                         try {
                             JSONArray jsonarray = new JSONArray(response);
-                            for(int i=0;i<jsonarray.length();i++)
-                            {
-                                JSONObject object=jsonarray.getJSONObject(i);
-                                Log.d("test",object.getString("capital"));
-                                String capitalText = object.getString("capital").replace("[","");
-                                capitalText = capitalText.replace("]","");
-                                capitalText = capitalText.replace("\"","");
-
-                                capital.setText(capitalText);
-                                randomCountry.setText(COUNTRIES[random]);
+                            JSONObject object= jsonarray.getJSONObject(random);
+                            String country = getCountryNameFromApi(object, random);
+                            String capital = getCapitalName(object);
 
 
-                            }
+                            String flagImageUrl = getFlag(object);
+                            Picasso.get().load(flagImageUrl).into(imageView);
+                            randomCountry.setText(country);
+                            randomCapital.setText(capital);
+
+
                         }catch (JSONException err){
                             Log.d("Error", err.toString());
                         }
 
 
+                    }
+
+                    private String getFlag(JSONObject object) throws JSONException {
+                        Log.d("flags", object.toString());
+                        JSONObject flagArray = object.getJSONObject("flags");
+                        String png = flagArray.getString("png");
+                        Log.d("linkToFlag", png);
+                        return png;
+                    }
+
+                    private String getCapitalName(JSONObject object) throws JSONException {
+                        Log.d("object", object.toString());
+                        JSONArray capitalArray = object.getJSONArray("capital");
+                        String capital = (String) capitalArray.get(0);
+                        Log.d("capital", capital.toString());
+                        return  capital;
+                    }
+
+                    @NonNull
+                    private String getCountryNameFromApi(JSONObject object, int random) throws JSONException {
+                        Log.d("object", object.toString());
+                        JSONObject jsonArray = object.getJSONObject("name");
+                        String name = jsonArray.getString("common");
+                        Log.d("lalala", name);
+                        return name;
                     }
                 }, new Response.ErrorListener() {
             @Override
@@ -174,6 +197,7 @@ public class MainActivity extends AppCompatActivity implements ShakeDetector.Lis
 
     }
 
+
     @Override
     protected void onStop () {
         super.onStop();
@@ -184,6 +208,6 @@ public class MainActivity extends AppCompatActivity implements ShakeDetector.Lis
 
     @Override
     public void hearShake() {
-        Toast.makeText(this, "Don't shake me, bro!", Toast.LENGTH_SHORT).show();
+    callApi();
     }
 }

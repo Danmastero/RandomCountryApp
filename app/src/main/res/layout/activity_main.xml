@@ -4,7 +4,11 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    tools:context=".MainActivity">
+    tools:context=".MainActivity"
+    android:background="@color/cardview_dark_background"
+
+
+    >
 
     <TextView
         android:id="@+id/randomCountry"
@@ -15,27 +19,40 @@
         app:layout_constraintLeft_toLeftOf="parent"
         app:layout_constraintRight_toRightOf="parent"
         app:layout_constraintTop_toTopOf="parent" />
+
     <TextView
         android:id="@+id/capital"
-        android:layout_below="@+id/randomCountry"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
+        android:layout_below="@+id/randomCountry"
+        android:layout_marginTop="35dp"
         android:text="Potrzasnij telefonem"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintLeft_toLeftOf="parent"
         app:layout_constraintRight_toRightOf="parent"
         app:layout_constraintTop_toTopOf="parent" />
-    <Button
-        android:layout_width="wrap_content"
-        android:id="@+id/button"
-        android:layout_height="wrap_content"
-        android:layout_below="@id/capital" android:text="Click"
-        />
-<Button
-        android:layout_width="wrap_content"
-        android:id="@+id/search"
-        android:layout_height="wrap_content"
-        android:layout_below="@id/button" android:text="Search in Google"
-        />
 
+    <Button
+        android:id="@+id/button"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_below="@id/imgFlag"
+        android:layout_marginTop="227dp"
+        android:text="Click" />
+
+    <Button
+        android:id="@+id/search"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_below="@id/button"
+        android:layout_marginTop="11dp"
+        android:text="Search in Google" />
+
+    <ImageView
+        android:id="@+id/imgFlag"
+        android:layout_width="114dp"
+        android:layout_height="133dp"
+        android:layout_below="@id/capital"
+
+        />
 </RelativeLayout>
