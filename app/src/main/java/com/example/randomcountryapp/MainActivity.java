@@ -12,6 +12,7 @@ import android.net.Uri;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.View;
+import android.view.animation.AnimationUtils;
 import android.widget.Button;
 import android.widget.ImageView;
 import android.widget.TextView;
@@ -43,6 +44,7 @@ public class MainActivity extends AppCompatActivity implements ShakeDetector.Lis
 
     TextView randomCountry;
     TextView randomCapital;
+    TextView shakeInformation;
     Button button;
     Button searchButton;
     ImageView imageView;
@@ -54,10 +56,12 @@ public class MainActivity extends AppCompatActivity implements ShakeDetector.Lis
         super.onCreate(savedInstanceState);
         setTheme(R.style.splashCreenTheme);
 
+
         setContentView(R.layout.activity_main);
 
         randomCountry = findViewById(R.id.randomCountry);
         randomCapital = findViewById(R.id.capital);
+        shakeInformation = findViewById(R.id.txtShakeStatus);
         button = findViewById(R.id.button);
         searchButton = findViewById(R.id.search);
         imageView = findViewById(R.id.imgFlag);
@@ -134,18 +138,24 @@ public class MainActivity extends AppCompatActivity implements ShakeDetector.Lis
                     @Override
                     public void onResponse(String response) {
                        //Log.d("Response", response.substring(0,500));
-
+                        String capital = null;
                         try {
                             JSONArray jsonarray = new JSONArray(response);
                             JSONObject object= jsonarray.getJSONObject(random);
                             String country = getCountryNameFromApi(object, random);
-                            String capital = getCapitalName(object);
-
+                            if(country != "Antarctica") {
+                                 capital = getCapitalName(object);
+                            }
 
                             String flagImageUrl = getFlag(object);
-                            Picasso.get().load(flagImageUrl).into(imageView);
+                            Picasso.get().load(flagImageUrl).resize(1200,550).into(imageView);
+
                             randomCountry.setText(country);
-                            randomCapital.setText(capital);
+                            if(capital != null)
+                                randomCapital.setText(capital);
+                            else randomCapital.setText("Ten kraj nie ma stolicy");
+
+                            shakeInformation.setText("Potrząśnij telefonem, żeby wylosować kraj");
 
 
                         }catch (JSONException err){
@@ -209,5 +219,9 @@ public class MainActivity extends AppCompatActivity implements ShakeDetector.Lis
     @Override
     public void hearShake() {
     callApi();
+
+        shakeInformation.startAnimation(AnimationUtils.loadAnimation(this,R.anim.shake));
+        shakeInformation.setText("Losuję kraj!");
+
     }
 }
