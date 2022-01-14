@@ -48,6 +48,7 @@ public class MainActivity extends AppCompatActivity implements ShakeDetector.Lis
     Button button;
     Button searchButton;
     ImageView imageView;
+    String mapView;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -65,6 +66,8 @@ public class MainActivity extends AppCompatActivity implements ShakeDetector.Lis
         button = findViewById(R.id.button);
         searchButton = findViewById(R.id.search);
         imageView = findViewById(R.id.imgFlag);
+
+
 
         button.setOnClickListener(new View.OnClickListener(){
             @Override
@@ -94,10 +97,15 @@ public class MainActivity extends AppCompatActivity implements ShakeDetector.Lis
     }
 
     private void searchInGoogle() {
-        String urlString = "https://www.google.com/search?q=" + randomCapital.getText().toString();
+        String urlString = "https://www.google.pl/maps/place/Politechnika+Białostocka/@53.1171019,23.1444932,17z/data=!3m1!4b1!4m5!3m4!1s0x471ffbfb9415aee5:0x1f6449ccc6c966f7!8m2!3d53.1170987!4d23.1466872?hl=pl";
+        //String urlString = "https://www.google.com/search?q=" + randomCapital.getText().toString();
+        if(mapView != null) {
+            urlString = mapView;
+        }
+
         Intent intent = new Intent(Intent.ACTION_VIEW, Uri.parse(urlString));
         intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
-        intent.setPackage("com.android.chrome");
+        intent.setPackage("com.andro/id.chrome");
         try {
             this.startActivity(intent);
         } catch (ActivityNotFoundException ex) {
@@ -138,15 +146,16 @@ public class MainActivity extends AppCompatActivity implements ShakeDetector.Lis
                     @Override
                     public void onResponse(String response) {
                        //Log.d("Response", response.substring(0,500));
-                        String capital = null;
+                        String capital = "Brak stolicy";
                         try {
                             JSONArray jsonarray = new JSONArray(response);
                             JSONObject object= jsonarray.getJSONObject(random);
                             String country = getCountryNameFromApi(object, random);
+
                             if(country != "Antarctica") {
                                  capital = getCapitalName(object);
                             }
-
+                            mapView = getMapUrl(object);
                             String flagImageUrl = getFlag(object);
                             Picasso.get().load(flagImageUrl).resize(1200,550).into(imageView);
 
@@ -179,6 +188,13 @@ public class MainActivity extends AppCompatActivity implements ShakeDetector.Lis
                         String capital = (String) capitalArray.get(0);
                         Log.d("capital", capital.toString());
                         return  capital;
+                    }
+                    private String getMapUrl(JSONObject object) throws JSONException {
+                        Log.d("googleMaps", object.toString());
+                        JSONObject flagArray = object.getJSONObject("maps");
+                        String mapLink = flagArray.getString("googleMaps");
+                        Log.d("linkToMap", mapLink);
+                        return mapLink;
                     }
 
                     @NonNull
@@ -224,4 +240,6 @@ public class MainActivity extends AppCompatActivity implements ShakeDetector.Lis
         shakeInformation.setText("Losuję kraj!");
 
     }
+
+
 }
